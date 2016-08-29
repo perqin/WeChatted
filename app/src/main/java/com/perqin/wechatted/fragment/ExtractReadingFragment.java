@@ -1,6 +1,6 @@
 package com.perqin.wechatted.fragment;
 
-import android.net.Uri;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -11,10 +11,11 @@ import android.view.ViewGroup;
 
 import com.perqin.wechatted.R;
 import com.perqin.wechatted.adapter.ExtractReadingRecyclerAdapter;
+import com.perqin.wechatted.bean.TaskInfo;
 
 public class ExtractReadingFragment extends Fragment {
     private ExtractReadingRecyclerAdapter mRecyclerAdapter;
-    private OnFragmentInteractionListener mListener;
+    private OnExtractReadingInteractionListener mListener;
 
     public ExtractReadingFragment() {
         // Required empty public constructor
@@ -37,32 +38,43 @@ public class ExtractReadingFragment extends Fragment {
         return view;
     }
 
-    private void prepareRecyclerAdapter() {
-        mRecyclerAdapter = new ExtractReadingRecyclerAdapter();
-        mRecyclerAdapter.appendTaskInfo(ExtractReadingRecyclerAdapter.TaskInfo.NOT_START, "Request root permission");
-        mRecyclerAdapter.appendTaskInfo(ExtractReadingRecyclerAdapter.TaskInfo.NOT_START, "");
-        mRecyclerAdapter.appendTaskInfo(ExtractReadingRecyclerAdapter.TaskInfo.NOT_START, "");
-        mRecyclerAdapter.appendTaskInfo(ExtractReadingRecyclerAdapter.TaskInfo.NOT_START, "");
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof OnExtractReadingInteractionListener) {
+            mListener = (OnExtractReadingInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString() + " must implement OnFragmentInteractionListener");
+        }
     }
 
-//    @Override
-//    public void onAttach(Context context) {
-//        super.onAttach(context);
-//        if (context instanceof OnFragmentInteractionListener) {
-//            mListener = (OnFragmentInteractionListener) context;
-//        } else {
-//            throw new RuntimeException(context.toString() + " must implement OnFragmentInteractionListener");
-//        }
-//    }
-//
-//    @Override
-//    public void onDetach() {
-//        super.onDetach();
-//        mListener = null;
-//    }
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (mListener != null)
+            mListener.onCanStart();
+    }
 
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
+    }
+
+    public void setState(int step, int state) {
+        mRecyclerAdapter.setState(step, state);
+    }
+
+    private void prepareRecyclerAdapter() {
+        mRecyclerAdapter = new ExtractReadingRecyclerAdapter();
+        mRecyclerAdapter.appendTaskInfo(TaskInfo.NOT_START, "Request root permission");
+        mRecyclerAdapter.appendTaskInfo(TaskInfo.NOT_START, "Read IMEI");
+        mRecyclerAdapter.appendTaskInfo(TaskInfo.NOT_START, "Read UIN");
+        mRecyclerAdapter.appendTaskInfo(TaskInfo.NOT_START, "Copy history");
+        mRecyclerAdapter.appendTaskInfo(TaskInfo.NOT_START, "Read history");
+    }
+
+    public interface OnExtractReadingInteractionListener {
+        void onCanStart();
     }
 }

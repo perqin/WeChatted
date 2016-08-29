@@ -1,12 +1,16 @@
 package com.perqin.wechatted.adapter;
 
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.perqin.wechatted.R;
+import com.perqin.wechatted.bean.TaskInfo;
 
 import java.util.ArrayList;
 
@@ -23,6 +27,30 @@ public class ExtractReadingRecyclerAdapter extends RecyclerView.Adapter<ExtractR
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
+        switch (mDataSet.get(position).state) {
+            case TaskInfo.NOT_START:
+                holder.progressBar.setVisibility(View.INVISIBLE);
+                holder.stateImage.setVisibility(View.INVISIBLE);
+                holder.taskText.setTextColor(Color.GRAY);
+                break;
+            case TaskInfo.RUNNING:
+                holder.progressBar.setVisibility(View.VISIBLE);
+                holder.stateImage.setVisibility(View.INVISIBLE);
+                holder.taskText.setTextColor(Color.BLACK);
+                break;
+            case TaskInfo.SUCCEED:
+                holder.progressBar.setVisibility(View.INVISIBLE);
+                holder.stateImage.setVisibility(View.VISIBLE);
+                holder.stateImage.setImageResource(R.drawable.ic_succeed_white_24dp);
+                holder.taskText.setTextColor(Color.GREEN);
+                break;
+            case TaskInfo.FAIL:
+                holder.progressBar.setVisibility(View.INVISIBLE);
+                holder.stateImage.setVisibility(View.VISIBLE);
+                holder.stateImage.setImageResource(R.drawable.ic_fail_white_24dp);
+                holder.taskText.setTextColor(Color.RED);
+                break;
+        }
         holder.taskText.setText(mDataSet.get(position).description);
     }
 
@@ -46,31 +74,16 @@ public class ExtractReadingRecyclerAdapter extends RecyclerView.Adapter<ExtractR
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
+        public ProgressBar progressBar;
+        public ImageView stateImage;
         public TextView taskText;
 
         public ViewHolder(View itemView) {
             super(itemView);
 
+            progressBar = (ProgressBar) itemView.findViewById(R.id.progress_bar);
+            stateImage = (ImageView) itemView.findViewById(R.id.state_image);
             taskText = (TextView) itemView.findViewById(R.id.task_text);
-        }
-    }
-
-    public static class TaskInfo {
-        public static final int NOT_START = 0;
-        public static final int RUNNING = 1;
-        public static final int SUCCEED = 2;
-        public static final int FAIL = 3;
-
-        public int state;
-        public String description;
-
-        public TaskInfo() {
-            this(NOT_START, "");
-        }
-
-        public TaskInfo(int state, String description) {
-            this.state = state;
-            this.description = description;
         }
     }
 }
