@@ -8,6 +8,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.perqin.wechatted.R;
 import com.perqin.wechatted.adapter.ExtractReadingRecyclerAdapter;
@@ -16,6 +18,8 @@ import com.perqin.wechatted.bean.TaskInfo;
 public class ExtractReadingFragment extends Fragment {
     private ExtractReadingRecyclerAdapter mRecyclerAdapter;
     private OnExtractReadingInteractionListener mListener;
+    private LinearLayout mErrorMessagePanel;
+    private TextView mErrorMessageText;
 
     public ExtractReadingFragment() {
         // Required empty public constructor
@@ -28,6 +32,9 @@ public class ExtractReadingFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_extract_reading, container, false);
+
+        mErrorMessagePanel = (LinearLayout) view.findViewById(R.id.error_message_panel);
+        mErrorMessageText = (TextView) view.findViewById(R.id.error_message_text);
 
         prepareRecyclerAdapter();
 
@@ -63,6 +70,15 @@ public class ExtractReadingFragment extends Fragment {
 
     public void setState(int step, int state) {
         mRecyclerAdapter.setState(step, state);
+    }
+
+    public void showErrorMessage(String message) {
+        mErrorMessageText.setText(message);
+        mErrorMessagePanel.setVisibility(View.VISIBLE);
+    }
+
+    public void hideErrorMessage() {
+        mErrorMessagePanel.setVisibility(View.GONE);
     }
 
     private void prepareRecyclerAdapter() {

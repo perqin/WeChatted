@@ -2,6 +2,7 @@
     <string name="app_name">WeChatted</string>
     <string name="recently_extracted">Recently extracted</string>
     <string name="title_activity_main">MainActivity</string>
+    <string name="retry">Retry</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
