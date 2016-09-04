@@ -8,13 +8,20 @@ import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.util.SparseArray;
+import android.widget.Toast;
 
 import com.perqin.wechatted.R;
 import com.perqin.wechatted.bean.TaskInfo;
+import com.perqin.wechatted.database.EnMicroMsgHelper;
 import com.perqin.wechatted.fragment.ExtractOptionsFragment;
 import com.perqin.wechatted.fragment.ExtractReadingFragment;
 import com.perqin.wechatted.fragment.ExtractWritingFragment;
+import com.perqin.wechatted.utils.MD5;
 
+import net.sqlcipher.database.SQLiteDatabase;
+import net.sqlcipher.database.SQLiteDatabaseHook;
+
+import java.io.File;
 import java.util.List;
 
 import eu.chainfire.libsuperuser.Shell;
@@ -24,12 +31,24 @@ public class ExtractActivity extends AppCompatActivity implements ExtractReading
     private ExtractOptionsFragment mOptionsFragment;
     private ExtractWritingFragment mWritingFragment;
 
-    private boolean taskRun = false;
+    private int currentStep = 0;
+
+    private EnMicroMsgHelper mEnMicroMsgHelper;
+    private File mDatabasesDir;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_extract);
+
+        mDatabasesDir = new File(getFilesDir(), "copiedDbs");
+        Log.i("DIR", mDatabasesDir.getAbsolutePath());
+        if (!mDatabasesDir.isDirectory() && !mDatabasesDir.mkdirs()) {
+            Toast.makeText(this, "Fail to create folder", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+
+        mEnMicroMsgHelper = new EnMicroMsgHelper(this, mDatabasesDir, "EnMicroMsg.db", new SqlCipherHook());
 
         mReadingFragment = ExtractReadingFragment.newInstance();
         mOptionsFragment = ExtractOptionsFragment.newInstance("", "");
@@ -45,10 +64,16 @@ public class ExtractActivity extends AppCompatActivity implements ExtractReading
 
     @Override
     public void onCanStart() {
-        if (!taskRun) {
-            new ExtractReadingSequenceTask(ExtractReadingSequenceTask.TASK_0_REQUEST_ROOT).execute();
-            taskRun = true;
-        }
+//        if (!taskRun) {
+        new ExtractReadingSequenceTask(ExtractReadingSequenceTask.TASK_0_REQUEST_ROOT).execute();
+//            taskRun = true;
+//        }
+    }
+
+    @Override
+    public void onRetryClick() {
+        mReadingFragment.hideErrorMessage();
+        new ExtractReadingSequenceTask(currentStep).execute();
     }
 
     private class ExtractReadingSequenceTask extends AsyncTask<Void, Integer, Boolean> {
@@ -58,9 +83,6 @@ public class ExtractActivity extends AppCompatActivity implements ExtractReading
         public static final int TASK_3_COPY_HISTORY = 3;
         public static final int TASK_4_READ_HISTORY = 4;
 
-//        private Process mSuProcess;
-//        DataInputStream inputStream;
-//        DataOutputStream outputStream;
         private SparseArray<SequenceTask> mTasks = new SparseArray<>();
         private int startFrom;
         private String lastError;
@@ -68,7 +90,7 @@ public class ExtractActivity extends AppCompatActivity implements ExtractReading
         private String imei;
         private String uin;
 
-        public ExtractReadingSequenceTask(int startFrom) {
+        ExtractReadingSequenceTask(int startFrom) {
             this.startFrom = startFrom;
             if (startFrom < TASK_0_REQUEST_ROOT || startFrom > TASK_4_READ_HISTORY) return;
             if (startFrom <= TASK_0_REQUEST_ROOT)
@@ -103,6 +125,7 @@ public class ExtractActivity extends AppCompatActivity implements ExtractReading
         @Override
         protected Boolean doInBackground(Void... params) {
             for (int step = startFrom; step <= TASK_4_READ_HISTORY; ++step) {
+                currentStep = step;
                 publishProgress(step, TaskInfo.RUNNING);
                 if (mTasks.get(step).execute()) {
                     publishProgress(step, TaskInfo.SUCCEED);
@@ -197,15 +220,38 @@ public class ExtractActivity extends AppCompatActivity implements ExtractReading
         private class CopyHistoryTask implements SequenceTask {
             @Override
             public boolean execute() {
-                return false;
+                @SuppressLint("SdCardPath")
+                String src = "/data/data/com.tencent.mm/MicroMsg/" + new MD5("mm" + uin).getMD5edString() + "/EnMicroMsg.db";
+                String dest = mDatabasesDir.getAbsolutePath() + "/EnMicroMsg.db";
+                String cpCmd = "cp -f " + src + " " + dest;
+                String chownCmd = "chown " + currentUser + ":" + currentUser + " " + dest;
+                Log.i("CMD", cpCmd);
+                Log.i("CMD", chownCmd);
+                List<String> output = Shell.run("su", new String[] { cpCmd, chownCmd }, null, true);
+                boolean succeed = output.size() == 0;
+                if (!succeed) lastError = "Fail to copy the history database: " + output.get(0);
+                return succeed;
             }
         }
 
         private class ReadHistoryTask implements SequenceTask {
             @Override
             public boolean execute() {
+                mEnMicroMsgHelper.setPassword(new MD5(imei + uin).getMD5edString().substring(0, 7));
+                mEnMicroMsgHelper.getRecentContacts();
                 return false;
             }
+        }
+    }
+
+    private class SqlCipherHook implements SQLiteDatabaseHook {
+        @Override
+        public void preKey(SQLiteDatabase sqLiteDatabase) {}
+
+        @Override
+        public void postKey(SQLiteDatabase sqLiteDatabase) {
+            sqLiteDatabase.rawExecSQL("PRAGMA cipher_use_hmac = off;");
+            sqLiteDatabase.rawExecSQL("PRAGMA kdf_iter = 4000;");
         }
     }
 

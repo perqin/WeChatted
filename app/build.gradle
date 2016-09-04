@@ -33,5 +33,6 @@ dependencies {
     compile 'com.android.support:support-v4:24.2.0'
     compile 'com.android.support.constraint:constraint-layout:1.0.0-alpha7'
     compile 'eu.chainfire:libsuperuser:1.0.0.201608240809'
+    compile 'net.zetetic:android-database-sqlcipher:3.4.0@aar'
     testCompile 'junit:junit:4.12'
 }

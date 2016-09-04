@@ -3,7 +3,11 @@
     <string name="recently_extracted">Recently extracted</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="retry">Retry</string>
+    <string name="request_root_permission">Request root permission</string>
+    <string name="read_imei">Read IMEI</string>
+    <string name="read_uin">Read UIN</string>
+    <string name="copy_history">Copy history</string>
+    <string name="read_history">Read history</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
