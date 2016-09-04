@@ -1,6 +1,7 @@
 package com.perqin.wechatted.adapter;
 
-import android.graphics.Color;
+import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,28 +28,29 @@ public class ExtractReadingRecyclerAdapter extends RecyclerView.Adapter<ExtractR
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
+        Context context = holder.itemView.getContext().getApplicationContext();
         switch (mDataSet.get(position).state) {
             case TaskInfo.NOT_START:
                 holder.progressBar.setVisibility(View.INVISIBLE);
                 holder.stateImage.setVisibility(View.INVISIBLE);
-                holder.taskText.setTextColor(Color.GRAY);
+                holder.taskText.setTextColor(ContextCompat.getColor(context, R.color.grey500));
                 break;
             case TaskInfo.RUNNING:
                 holder.progressBar.setVisibility(View.VISIBLE);
                 holder.stateImage.setVisibility(View.INVISIBLE);
-                holder.taskText.setTextColor(Color.BLACK);
+                holder.taskText.setTextColor(ContextCompat.getColor(context, android.R.color.black));
                 break;
             case TaskInfo.SUCCEED:
                 holder.progressBar.setVisibility(View.INVISIBLE);
                 holder.stateImage.setVisibility(View.VISIBLE);
                 holder.stateImage.setImageResource(R.drawable.ic_succeed_white_24dp);
-                holder.taskText.setTextColor(Color.GREEN);
+                holder.taskText.setTextColor(ContextCompat.getColor(context, R.color.green500));
                 break;
             case TaskInfo.FAIL:
                 holder.progressBar.setVisibility(View.INVISIBLE);
                 holder.stateImage.setVisibility(View.VISIBLE);
                 holder.stateImage.setImageResource(R.drawable.ic_fail_white_24dp);
-                holder.taskText.setTextColor(Color.RED);
+                holder.taskText.setTextColor(ContextCompat.getColor(context, R.color.red500));
                 break;
         }
         holder.taskText.setText(mDataSet.get(position).description);
