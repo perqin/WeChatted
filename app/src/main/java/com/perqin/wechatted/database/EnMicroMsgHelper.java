@@ -3,6 +3,8 @@ package com.perqin.wechatted.database;
 import android.content.Context;
 import android.util.Log;
 
+import com.perqin.wechatted.bean.RecentConversation;
+
 import net.sqlcipher.Cursor;
 import net.sqlcipher.database.SQLiteDatabase;
 import net.sqlcipher.database.SQLiteDatabaseHook;
@@ -34,25 +36,16 @@ public class EnMicroMsgHelper extends SQLiteOpenHelper {
         this.mPassword = password;
     }
 
-    public ArrayList<String> getRecentContacts() {
-        // FIXME: Return real contacts
+    public ArrayList<RecentConversation> getRecentConversations() {
+        ArrayList<RecentConversation> result = new ArrayList<>();
         SQLiteDatabase database = getReadableDatabase(mPassword);
-        Cursor cursor = database.query("rcontact", null, null, null, null, null, null);
-
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < cursor.getColumnCount(); ++i) sb.append(cursor.getColumnName(i)).append('\t');
-        Log.i("RCONTACT", sb.toString());
-
-        if (!cursor.isAfterLast()) {
-            cursor.moveToFirst();
+        Cursor cursor = database.query(EnMicroMsgContract.RconversationEntry.TABLE, null, null, null, null, null, null);
+        if (cursor.moveToFirst()) {
             while (!cursor.isAfterLast()) {
-                String stringBuilder = "Remark" + " = " + cursor.getString(2) + ", " +
-                        "Nickname" + " = " + cursor.getString(4) + ", " +
-                        "WeChatId" + " = " + cursor.getString(1);
-                Log.i("RCONTACT", stringBuilder);
+                result.add(RecentConversation.fromCursor(cursor));
                 cursor.moveToNext();
             }
         }
-        return null;
+        return result;
     }
 }

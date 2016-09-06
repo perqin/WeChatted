@@ -8,6 +8,14 @@
     <string name="read_uin">Read UIN</string>
     <string name="copy_history">Copy history</string>
     <string name="read_history">Read history</string>
+    <string name="choose_account">Choose account</string>
+    <string name="detect_current_account">Detect current account</string>
+    <string name="read">Read</string>
+    <string name="ok">OK</string>
+    <string name="switch_account">Switch account</string>
+    <string name="manage_accounts">Manage accounts</string>
+    <string name="imei">IMEI</string>
+    <string name="wechat_uin">WeChat UIN</string>
 
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
