@@ -16,17 +16,17 @@ import com.perqin.wechatted.bean.WeChatAccount;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ExtractReadingFragment extends Fragment {
+public class ExtractAccountFragment extends Fragment {
     private OnExtractReadingInteractionListener mListener;
     private ArrayList<WeChatAccount> mAccounts = new ArrayList<>();
     private RadioGroup mAccountRadioGroup;
 
-    public ExtractReadingFragment() {
+    public ExtractAccountFragment() {
         // Required empty public constructor
     }
 
-    public static ExtractReadingFragment newInstance() {
-        return new ExtractReadingFragment();
+    public static ExtractAccountFragment newInstance() {
+        return new ExtractAccountFragment();
     }
 
     @Override

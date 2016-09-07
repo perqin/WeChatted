@@ -8,21 +8,21 @@ import android.widget.Toast;
 import com.perqin.wechatted.R;
 import com.perqin.wechatted.bean.WeChatAccount;
 import com.perqin.wechatted.database.EnMicroMsgHelper;
+import com.perqin.wechatted.database.WeChattedHelper;
+import com.perqin.wechatted.fragment.ExtractConversationsFragment;
+import com.perqin.wechatted.fragment.ExtractAccountFragment;
 import com.perqin.wechatted.fragment.ExtractOptionsFragment;
-import com.perqin.wechatted.fragment.ExtractReadingFragment;
-import com.perqin.wechatted.fragment.ExtractWritingFragment;
 
 import net.sqlcipher.database.SQLiteDatabase;
 import net.sqlcipher.database.SQLiteDatabaseHook;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
-public class ExtractActivity extends AppCompatActivity implements ExtractReadingFragment.OnExtractReadingInteractionListener {
-    private ExtractReadingFragment mReadingFragment;
+public class ExtractActivity extends AppCompatActivity implements ExtractAccountFragment.OnExtractReadingInteractionListener {
+    private ExtractAccountFragment mChooseAccountFragment;
+    private ExtractConversationsFragment mConversationsFragment;
     private ExtractOptionsFragment mOptionsFragment;
-    private ExtractWritingFragment mWritingFragment;
 
     private int currentStep = 0;
 
@@ -43,25 +43,21 @@ public class ExtractActivity extends AppCompatActivity implements ExtractReading
 
         mEnMicroMsgHelper = new EnMicroMsgHelper(this, mDatabasesDir, "EnMicroMsg.db", new SqlCipherHook());
 
-        mReadingFragment = ExtractReadingFragment.newInstance();
+        mChooseAccountFragment = ExtractAccountFragment.newInstance();
+        mConversationsFragment = ExtractConversationsFragment.newInstance("", "");
         mOptionsFragment = ExtractOptionsFragment.newInstance("", "");
-        mWritingFragment = ExtractWritingFragment.newInstance("", "");
 
         if (savedInstanceState == null) {
             getSupportFragmentManager()
                     .beginTransaction()
-                    .add(R.id.container, mReadingFragment)
+                    .add(R.id.container, mChooseAccountFragment)
                     .commit();
         }
     }
 
     @Override
     public List<WeChatAccount> getWeChatAccounts() {
-        ArrayList<WeChatAccount> accounts = new ArrayList<>();
-        WeChatAccount account = new WeChatAccount();
-        account.setTitle("Title");
-        accounts.add(account);
-        return accounts;
+        return WeChattedHelper.getInstance(this).getWeChatAccounts();
     }
 
 //    @Override
@@ -74,7 +70,7 @@ public class ExtractActivity extends AppCompatActivity implements ExtractReading
 //
 //    @Override
 //    public void onRetryClick() {
-//        mReadingFragment.hideErrorMessage();
+//        mChooseAccountFragment.hideErrorMessage();
 //        new ExtractReadingSequenceTask(currentStep).execute();
 //    }
 
@@ -141,19 +137,19 @@ public class ExtractActivity extends AppCompatActivity implements ExtractReading
 //
 //        @Override
 //        protected final void onProgressUpdate(Integer... values) {
-////            mReadingFragment.setState(values[0], values[1]);
+////            mChooseAccountFragment.setState(values[0], values[1]);
 //        }
 //
 //        @Override
 //        protected void onPostExecute(Boolean succeed) {
 //            if (succeed) {
-////                mReadingFragment.hideErrorMessage();
+////                mChooseAccountFragment.hideErrorMessage();
 //                getSupportFragmentManager()
 //                        .beginTransaction()
-//                        .replace(R.id.container, mOptionsFragment)
+//                        .replace(R.id.container, mConversationsFragment)
 //                        .commit();
 //            } else {
-////                mReadingFragment.showErrorMessage(lastError);
+////                mChooseAccountFragment.showErrorMessage(lastError);
 //            }
 //        }
 //
@@ -259,7 +255,7 @@ public class ExtractActivity extends AppCompatActivity implements ExtractReading
         }
     }
 
-    private interface SequenceTask {
-        boolean execute();
-    }
+//    private interface SequenceTask {
+//        boolean execute();
+//    }
 }

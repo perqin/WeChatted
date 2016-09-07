@@ -3,7 +3,7 @@ package com.perqin.wechatted.database;
 
 import android.provider.BaseColumns;
 
-public final class WeChatAccountContract {
+public final class WeChattedContract {
     public static abstract class WeChatAccountEntry implements BaseColumns {
         public static final String TABLE = "wechat_account";
 
