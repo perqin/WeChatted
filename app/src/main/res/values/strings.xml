@@ -16,6 +16,9 @@
     <string name="manage_accounts">Manage accounts</string>
     <string name="imei">IMEI</string>
     <string name="wechat_uin">WeChat UIN</string>
+    <string name="root_access_is_required_to_read_wechat_uin">Root access is required to read WeChat UIN.</string>
+    <string name="root_access_is_required_to_read_wechat_history">Root access is required to read WeChat history.</string>
+    <string name="failed_to_read_uin">Failed to read UIN.</string>
 
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

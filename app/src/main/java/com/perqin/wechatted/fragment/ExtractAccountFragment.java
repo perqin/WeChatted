@@ -16,8 +16,8 @@ import com.perqin.wechatted.bean.WeChatAccount;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ExtractAccountFragment extends Fragment {
-    private OnExtractReadingInteractionListener mListener;
+public class ExtractAccountFragment extends Fragment implements View.OnClickListener {
+    private OnExtractAccountInteractionListener mListener;
     private ArrayList<WeChatAccount> mAccounts = new ArrayList<>();
     private RadioGroup mAccountRadioGroup;
 
@@ -32,8 +32,8 @@ public class ExtractAccountFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof OnExtractReadingInteractionListener) {
-            mListener = (OnExtractReadingInteractionListener) context;
+        if (context instanceof OnExtractAccountInteractionListener) {
+            mListener = (OnExtractAccountInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString() + " must implement OnFragmentInteractionListener");
         }
@@ -56,6 +56,9 @@ public class ExtractAccountFragment extends Fragment {
 
         prepareRadioGroups();
 
+        view.findViewById(R.id.manage_accounts_button).setOnClickListener(this);
+        view.findViewById(R.id.read_button).setOnClickListener(this);
+
         return view;
     }
 
@@ -74,7 +77,31 @@ public class ExtractAccountFragment extends Fragment {
         mListener = null;
     }
 
-    public interface OnExtractReadingInteractionListener {
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.manage_accounts_button:
+                if (mListener != null) mListener.onManageAccountsButtonClick();
+                break;
+            case R.id.read_button:
+                int id = mAccountRadioGroup.getCheckedRadioButtonId();
+                String uin = "";
+                if (id == R.id.detect_current_account_radio) {
+                    if (mListener != null) uin = mListener.readCurrentUin();
+                } else {
+                    uin = mAccounts.get(id).getUin();
+                }
+                if (mListener != null) mListener.onReadButtonClick(uin);
+                break;
+            default:
+                break;
+        }
+    }
+
+    public interface OnExtractAccountInteractionListener {
         List<WeChatAccount> getWeChatAccounts();
+        String readCurrentUin();
+        void onManageAccountsButtonClick();
+        void onReadButtonClick(String uin);
     }
 }

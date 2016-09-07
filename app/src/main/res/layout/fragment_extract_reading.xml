@@ -19,6 +19,7 @@
         android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:layout_marginEnd="@dimen/activity_horizontal_margin">
         <RadioButton
+            android:id="@+id/detect_current_account_radio"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/detect_current_account"
