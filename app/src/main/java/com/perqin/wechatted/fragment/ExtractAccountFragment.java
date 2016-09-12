@@ -9,16 +9,22 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Toast;
 
 import com.perqin.wechatted.R;
 import com.perqin.wechatted.bean.WeChatAccount;
+import com.perqin.wechatted.database.WeChattedHelper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import eu.chainfire.libsuperuser.Shell;
 
 public class ExtractAccountFragment extends Fragment implements View.OnClickListener {
     private OnExtractAccountInteractionListener mListener;
-    private ArrayList<WeChatAccount> mAccounts = new ArrayList<>();
+    private ArrayList<WeChatAccount> mAccounts;
     private RadioGroup mAccountRadioGroup;
 
     public ExtractAccountFragment() {
@@ -42,15 +48,13 @@ public class ExtractAccountFragment extends Fragment implements View.OnClickList
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (mListener != null) {
-            mAccounts.clear();
-            mAccounts.addAll(mListener.getWeChatAccounts());
-        }
+
+        mAccounts = WeChattedHelper.getInstance(getActivity()).getWeChatAccounts();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_extract_reading, container, false);
+        View view = inflater.inflate(R.layout.fragment_extract_account, container, false);
 
         mAccountRadioGroup = (RadioGroup) view.findViewById(R.id.account_radio_group);
 
@@ -84,24 +88,48 @@ public class ExtractAccountFragment extends Fragment implements View.OnClickList
                 if (mListener != null) mListener.onManageAccountsButtonClick();
                 break;
             case R.id.read_button:
-                int id = mAccountRadioGroup.getCheckedRadioButtonId();
-                String uin = "";
-                if (id == R.id.detect_current_account_radio) {
-                    if (mListener != null) uin = mListener.readCurrentUin();
-                } else {
-                    uin = mAccounts.get(id).getUin();
-                }
-                if (mListener != null) mListener.onReadButtonClick(uin);
+                if (mListener != null) mListener.onReadButtonClick();
                 break;
             default:
                 break;
         }
     }
 
+    private String readCurrentUin() {
+        if (!Shell.SU.available()) {
+            Toast.makeText(getActivity(), getString(R.string.root_access_is_required_to_read_wechat_uin), Toast.LENGTH_SHORT).show();
+            return null;
+        }
+        Pattern pattern = Pattern.compile(".*?default_uin.+?value=\"([-0-9]+).*?");
+        List<String> lines = Shell.SU.run("cat /data/data/com.tencent.mm/shared_prefs/system_config_prefs.xml");
+        for (String line : lines) {
+            Matcher matcher = pattern.matcher(line);
+            if (matcher.matches()) {
+                return matcher.group(1);
+            }
+        }
+        Toast.makeText(getActivity(), getString(R.string.failed_to_read_uin), Toast.LENGTH_SHORT).show();
+        return null;
+    }
+
+    public WeChatAccount getSelectedAccount() {
+        int id = mAccountRadioGroup.getCheckedRadioButtonId();
+        if (id == R.id.detect_current_account_radio) {
+            String uin = readCurrentUin();
+            if (uin == null) {
+                return null;
+            }
+            WeChatAccount account = new WeChatAccount();
+            account.setUin(uin);
+            account.setTitle("Current account");
+            return account;
+        } else {
+            return mAccounts.get(id);
+        }
+    }
+
     public interface OnExtractAccountInteractionListener {
-        List<WeChatAccount> getWeChatAccounts();
-        String readCurrentUin();
         void onManageAccountsButtonClick();
-        void onReadButtonClick(String uin);
+        void onReadButtonClick();
     }
 }
