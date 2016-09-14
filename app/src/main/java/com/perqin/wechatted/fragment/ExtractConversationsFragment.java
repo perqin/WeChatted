@@ -151,7 +151,7 @@ public class ExtractConversationsFragment extends Fragment {
             }
             // Set password
             mEnMicroMsgHelper.setPassword(new MD5(mImei + mUin).getMD5edString().substring(0, 7));
-            // TODO: Read db
+            // TO//DO: Read db
             // Read recent conversations
             conversations = mEnMicroMsgHelper.getRecentConversations();
             return true;

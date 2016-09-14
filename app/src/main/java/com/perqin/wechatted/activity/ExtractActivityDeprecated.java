@@ -38,7 +38,7 @@ public class ExtractActivityDeprecated extends AppCompatActivity
     // Implements ExtractAccountFragment.OnExtractAccountInteractionListener
     @Override
     public void onManageAccountsButtonClick() {
-        // TODO: manage accounts
+        // TO//DO: manage accounts
     }
 
     // Implements ExtractAccountFragment.OnExtractAccountInteractionListener
