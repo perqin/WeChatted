@@ -8,11 +8,14 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.Toast;
 
 import com.perqin.wechatted.R;
 import com.perqin.wechatted.adapter.RecentlyExtractedRecyclerAdapter;
 
 public class MainActivity extends AppCompatActivity {
+    private static final int REQUEST_EXTRACT = 0;
+
     private RecyclerView mRecyclerView;
     private RecentlyExtractedRecyclerAdapter mRecyclerAdapter;
 
@@ -33,8 +36,22 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, ExtractActivity.class));
+                startActivityForResult(new Intent(MainActivity.this, ExtractActivity.class), REQUEST_EXTRACT);
             }
         });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case REQUEST_EXTRACT:
+                if (resultCode == ExtractActivity.RESULT_OPEN) {
+                    Toast.makeText(this, "Will open extraction: " + data.getStringExtra(ExtractActivity.EXTRA_EXTRACTION_NAME), Toast.LENGTH_SHORT).show();
+                    // TODO: Open extraction from data
+                }
+                break;
+            default:
+                break;
+        }
     }
 }

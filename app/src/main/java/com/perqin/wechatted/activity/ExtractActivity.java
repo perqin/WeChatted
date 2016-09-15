@@ -2,6 +2,7 @@ package com.perqin.wechatted.activity;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -31,6 +32,10 @@ import eu.chainfire.libsuperuser.Shell;
 
 
 public class ExtractActivity extends AppCompatActivity implements View.OnClickListener {
+    public static final int RESULT_DONE = 0;
+    public static final int RESULT_OPEN = 1;
+    public static final String EXTRA_EXTRACTION_NAME = "EXTRA_EXTRACTION_NAME";
+
     private TextInputEditText mExtractionNameEdit;
     private Button mStartButton;
     private ProgressBar mProgressBar;
@@ -64,6 +69,7 @@ public class ExtractActivity extends AppCompatActivity implements View.OnClickLi
         mStatusText.setVisibility(View.GONE);
         mRetryButton.setVisibility(View.GONE);
         mDoneButton.setVisibility(View.GONE);
+        mOpenButton.setVisibility(View.GONE);
 
         mTempDbDir = new File(getFilesDir(), "copiedDbs");
         if (!mTempDbDir.isDirectory() && !mTempDbDir.mkdirs()) {
@@ -121,11 +127,15 @@ public class ExtractActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void doneExtraction() {
+        setResult(RESULT_DONE);
         finish();
     }
 
     private void openExtraction() {
-        // TODO: Open extraction
+        Intent data = new Intent();
+        data.putExtra(EXTRA_EXTRACTION_NAME, mExtractionNameEdit.getText().toString());
+        setResult(RESULT_OPEN, data);
+        finish();
     }
 
     private class ExtractionTask extends AsyncTask<String, String, Boolean> {
@@ -227,6 +237,7 @@ public class ExtractActivity extends AppCompatActivity implements View.OnClickLi
                 mProgressBar.setVisibility(View.GONE);
                 mStatusText.setVisibility(View.GONE);
                 mDoneButton.setVisibility(View.VISIBLE);
+                mOpenButton.setVisibility(View.VISIBLE);
             } else {
                 mProgressBar.setVisibility(View.GONE);
                 mStatusText.setText(error);
