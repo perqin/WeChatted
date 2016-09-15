@@ -33,23 +33,38 @@
         android:orientation="vertical"
         android:gravity="center">
         <ProgressBar
+            style="?android:attr/progressBarStyleLarge"
             android:id="@+id/progress_bar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
         <TextView
+            style="@style/TextAppearance.AppCompat.Headline"
             android:id="@+id/status_text"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:text="@string/history_files_will_be_saved_to"
+            android:textAlignment="center"/>
         <Button
             android:id="@+id/retry_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/retry"/>
-        <Button
-            style="@style/Widget.AppCompat.Button.Colored"
-            android:id="@+id/done_button"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/done"/>
+            android:orientation="horizontal">
+            <Button
+                android:id="@+id/done_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/done"
+                tools:ignore="ButtonStyle" />
+            <Button
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:id="@+id/open_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/open"/>
+        </LinearLayout>
     </LinearLayout>
 </LinearLayout>

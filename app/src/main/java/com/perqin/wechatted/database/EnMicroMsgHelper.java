@@ -5,6 +5,7 @@ import android.util.Log;
 
 import com.perqin.wechatted.WeChattedApp;
 import com.perqin.wechatted.bean.RecentConversation;
+import com.perqin.wechatted.util.LogTag;
 
 import net.sqlcipher.Cursor;
 import net.sqlcipher.database.SQLiteDatabase;
@@ -39,11 +40,27 @@ public class EnMicroMsgHelper extends SQLiteOpenHelper {
     }
 
     public static boolean createDecryptedDatabase(File srcFile, File destFile, String password) {
+        // Ensure that dest directory is creatable
+        if (destFile.getParentFile().exists() && destFile.getParentFile().isFile()) {
+            Log.e(LogTag.TAG_FILE, "destFile parent should be a directory: " + destFile.getParent());
+            return false;
+        }
+        // Create parent dest directory if not exists
+        if (!destFile.getParentFile().exists() && !destFile.getParentFile().mkdirs()) {
+            Log.e(LogTag.TAG_FILE, "Failed to recursively create destFile parent directory: " + destFile.getParent());
+            return false;
+        }
+        // Remove destFile is exists
+        if (destFile.exists() && !destFile.delete()) {
+            Log.e(LogTag.TAG_FILE, "Failed to remove destFile: " + destFile.getAbsolutePath());
+            return false;
+        }
         // Create new file in advanced
-        boolean deleted = destFile.delete();
-        if (!deleted) Log.i("FILE", "Fail to delete " + destFile.getAbsolutePath());
         try {
-            if (!destFile.createNewFile()) Log.i("FILE", destFile.getAbsolutePath() + " can not be created");
+            if (!destFile.createNewFile()) {
+                Log.e(LogTag.TAG_FILE, "Failed to create empty destFile: " + destFile.getAbsolutePath());
+                return false;
+            }
         } catch (IOException e) {
             e.printStackTrace();
             return false;
@@ -58,10 +75,10 @@ public class EnMicroMsgHelper extends SQLiteOpenHelper {
         DETACH DATABASE decrypted_database;
         */
         SQLiteDatabase.loadLibs(WeChattedApp.appContext);
-        SQLiteDatabase database = SQLiteDatabase.openDatabase(srcFile.getAbsolutePath(), password, null, SQLiteDatabase.OPEN_READWRITE, new EnMicroMsgHook());
-        database.rawExecSQL(String.format("ATTACH DATABASE '%s' AS decrypted_database KEY ''", destFile.getAbsolutePath()));
-        database.rawExecSQL("SELECT sqlcipher_export('decrypted_database')");
-        database.rawExecSQL("DETACH DATABASE decrypted_database");
+        SQLiteDatabase database = SQLiteDatabase.openOrCreateDatabase(srcFile, password, null, new EnMicroMsgHook());
+        database.rawExecSQL(String.format("ATTACH DATABASE '%s' AS decrypted_database KEY '';", destFile.getAbsolutePath()));
+        database.rawExecSQL("SELECT sqlcipher_export('decrypted_database');");
+        database.rawExecSQL("DETACH DATABASE decrypted_database;");
         database.close();
         return true;
     }

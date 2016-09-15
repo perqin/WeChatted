@@ -37,6 +37,7 @@ public class ExtractActivity extends AppCompatActivity implements View.OnClickLi
     private TextView mStatusText;
     private Button mRetryButton;
     private Button mDoneButton;
+    private Button mOpenButton;
 
     private File mTempDbDir;
     private ExtractionTask mTask;
@@ -52,10 +53,12 @@ public class ExtractActivity extends AppCompatActivity implements View.OnClickLi
         mStatusText = (TextView) findViewById(R.id.status_text);
         mRetryButton = (Button) findViewById(R.id.retry_button);
         mDoneButton = (Button) findViewById(R.id.done_button);
+        mOpenButton = (Button) findViewById(R.id.open_button);
 
         mStartButton.setOnClickListener(this);
         mRetryButton.setOnClickListener(this);
         mDoneButton.setOnClickListener(this);
+        mOpenButton.setOnClickListener(this);
 
         mProgressBar.setVisibility(View.GONE);
         mStatusText.setVisibility(View.GONE);
@@ -69,7 +72,7 @@ public class ExtractActivity extends AppCompatActivity implements View.OnClickLi
         }
 
 
-        mExtractionNameEdit.setText(getString(R.string.extraction_name_format, new java.text.SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(Calendar.getInstance().getTime())));
+        mExtractionNameEdit.setText(getString(R.string.extraction_name_format, new java.text.SimpleDateFormat("yyyyMMddHHmmss", Locale.getDefault()).format(Calendar.getInstance().getTime())));
     }
 
     @Override
@@ -91,6 +94,10 @@ public class ExtractActivity extends AppCompatActivity implements View.OnClickLi
                 break;
             case R.id.done_button:
                 doneExtraction();
+                break;
+            case R.id.open_button:
+                openExtraction();
+                break;
             default:
                 break;
         }
@@ -115,6 +122,10 @@ public class ExtractActivity extends AppCompatActivity implements View.OnClickLi
 
     private void doneExtraction() {
         finish();
+    }
+
+    private void openExtraction() {
+        // TODO: Open extraction
     }
 
     private class ExtractionTask extends AsyncTask<String, String, Boolean> {
