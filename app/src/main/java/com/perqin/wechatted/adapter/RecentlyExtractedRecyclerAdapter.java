@@ -7,15 +7,17 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.perqin.wechatted.R;
+import com.perqin.wechatted.adapter.bean.Extraction;
 
 import java.util.ArrayList;
+import java.util.List;
 
 
 public class RecentlyExtractedRecyclerAdapter extends RecyclerView.Adapter<RecentlyExtractedRecyclerAdapter.ViewHolder> {
     private static final int TYPE_HEADER = 0;
     private static final int TYPE_ITEM = 1;
 
-    private ArrayList<Object> mDataSet = new ArrayList<>();
+    private ArrayList<Extraction> mDataSet = new ArrayList<>();
 
     @Override
     public int getItemViewType(int position) {
@@ -42,10 +44,9 @@ public class RecentlyExtractedRecyclerAdapter extends RecyclerView.Adapter<Recen
             case TYPE_HEADER:
                 break;
             case TYPE_ITEM:
-                // TODO: Fill data
                 ItemViewHolder vh = (ItemViewHolder) holder;
-                vh.nameText.setText("This is the name " + String.valueOf(position));
-                vh.timeText.setText("This is the time " + String.valueOf(position));
+                vh.nameText.setText(mDataSet.get(position - 1).getName());
+                vh.timeText.setText(mDataSet.get(position - 1).getTime());
                 break;
             default:
                 break;
@@ -57,7 +58,13 @@ public class RecentlyExtractedRecyclerAdapter extends RecyclerView.Adapter<Recen
         return 1 + mDataSet.size();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public void reloadExtractions(List<Extraction> extractions) {
+        mDataSet.clear();
+        mDataSet.addAll(extractions);
+        notifyDataSetChanged();
+    }
+
+    static class ViewHolder extends RecyclerView.ViewHolder {
         public ViewHolder(View itemView) {
             super(itemView);
         }
