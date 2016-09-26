@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.perqin.wechatted.WeChattedApp;
+import com.perqin.wechatted.adapter.bean.Conversation;
 import com.perqin.wechatted.bean.RecentConversation;
 import com.perqin.wechatted.util.LogTag;
 
@@ -17,12 +18,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class EnMicroMsgHelper extends SQLiteOpenHelper {
-    public static final int VERSION = 1;
-    private String mPassword;
+    private static final int VERSION = 1;
 
     public EnMicroMsgHelper(Context context, File workingDir, String name, SQLiteDatabaseHook hook) {
         super(context, workingDir.getAbsolutePath() + "/" + name, null, VERSION, hook);
         SQLiteDatabase.loadLibs(context, workingDir);
+    }
+
+    public static EnMicroMsgHelper newInstance(Context context, File databaseFile) {
+        return new EnMicroMsgHelper(context, databaseFile.getParentFile(), databaseFile.getName(), new EnMicroMsgHook());
     }
 
     @Override
@@ -35,10 +39,18 @@ public class EnMicroMsgHelper extends SQLiteOpenHelper {
         Log.w("CIPHER", "onUpgrade is invoked");
     }
 
-    public void setPassword(String password) {
-        this.mPassword = password;
-    }
-
+    /**
+     * The following operations are executed:
+     * <code>
+     *     sqlcipher EnMicroMsg.db
+     *     PRAGMA key = "key";
+     *     PRAGMA cipher_use_hmac = off;
+     *     PRAGMA kdf_iter = 4000;
+     *     ATTACH DATABASE "decrypted_database.db" AS decrypted_database KEY "";
+     *     SELECT sqlcipher_export("decrypted_database");
+     *     DETACH DATABASE decrypted_database;
+     * </code>
+     */
     public static boolean createDecryptedDatabase(File srcFile, File destFile, String password) {
         // Ensure that dest directory is creatable
         if (destFile.getParentFile().exists() && destFile.getParentFile().isFile()) {
@@ -65,27 +77,26 @@ public class EnMicroMsgHelper extends SQLiteOpenHelper {
             e.printStackTrace();
             return false;
         }
-        /*
-        sqlcipher EnMicroMsg.db
-        PRAGMA key = "key";
-        PRAGMA cipher_use_hmac = off;
-        PRAGMA kdf_iter = 4000;
-        ATTACH DATABASE "decrypted_database.db" AS decrypted_database KEY "";
-        SELECT sqlcipher_export("decrypted_database");
-        DETACH DATABASE decrypted_database;
-        */
         SQLiteDatabase.loadLibs(WeChattedApp.appContext);
-        SQLiteDatabase database = SQLiteDatabase.openOrCreateDatabase(srcFile, password, null, new EnMicroMsgHook());
+        EnMicroMsgHook hook = new EnMicroMsgHook();
+        SQLiteDatabase database;
+        // Export decrypted database
+        database = SQLiteDatabase.openDatabase(srcFile.getAbsolutePath(), password, null, SQLiteDatabase.CREATE_IF_NECESSARY, hook);
         database.rawExecSQL(String.format("ATTACH DATABASE '%s' AS decrypted_database KEY '';", destFile.getAbsolutePath()));
         database.rawExecSQL("SELECT sqlcipher_export('decrypted_database');");
         database.rawExecSQL("DETACH DATABASE decrypted_database;");
         database.close();
+        // Set version to 1
+        database = SQLiteDatabase.openDatabase(destFile.getAbsolutePath(), "", null, SQLiteDatabase.OPEN_READWRITE, hook);
+        database.setVersion(VERSION);
+        database.close();
+
         return true;
     }
 
     public ArrayList<RecentConversation> getRecentConversations() {
         ArrayList<RecentConversation> result = new ArrayList<>();
-        SQLiteDatabase database = getReadableDatabase(mPassword);
+        SQLiteDatabase database = getReadableDatabase("");
         Cursor cursor = database.query(EnMicroMsgContract.RconversationEntry.TABLE, null, null, null, null, null, null);
         if (cursor.moveToFirst()) {
             while (!cursor.isAfterLast()) {
@@ -94,6 +105,12 @@ public class EnMicroMsgHelper extends SQLiteOpenHelper {
             }
         }
         return result;
+    }
+
+    // Get list for conversation list adapter
+    public ArrayList<Conversation> getAdapterConversations() {
+        ArrayList<Conversation> conversations = new ArrayList<>();
+        return conversations;
     }
 
     private static class EnMicroMsgHook implements SQLiteDatabaseHook {

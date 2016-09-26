@@ -3,7 +3,7 @@
     package="com.perqin.wechatted">
 
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:name=".WeChattedApp"
@@ -23,7 +23,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".activity.ExtractActivityDeprecated" />
-        <activity android:name=".activity.ExtractActivity"></activity>
+        <activity android:name=".activity.ExtractActivity" />
+        <activity android:name=".activity.ExtractionEditorActivity" />
     </application>
 
 </manifest>

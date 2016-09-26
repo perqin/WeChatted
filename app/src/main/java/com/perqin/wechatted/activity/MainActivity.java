@@ -11,7 +11,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.widget.Toast;
 
 import com.perqin.wechatted.R;
 import com.perqin.wechatted.adapter.RecentlyExtractedRecyclerAdapter;
@@ -32,13 +31,15 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mRecyclerAdapter = new RecentlyExtractedRecyclerAdapter();
+        mRecyclerAdapter.setOnItemClickListener(new OnExtractionClickListener());
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.content_main);
         mSwipeRefreshLayout.setOnRefreshListener(this);
 
-        mRecyclerAdapter = new RecentlyExtractedRecyclerAdapter();
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(mRecyclerAdapter);
@@ -60,8 +61,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             case REQUEST_EXTRACT:
                 new ReloadExtractionsTask().execute();
                 if (resultCode == ExtractActivity.RESULT_OPEN) {
-                    Toast.makeText(this, "Will open extraction: " + data.getStringExtra(ExtractActivity.EXTRA_EXTRACTION_NAME), Toast.LENGTH_SHORT).show();
-                    // TODO: Open extraction from data
+                    openExtraction(data.getStringExtra(ExtractActivity.EXTRA_EXTRACTION_NAME));
                 }
                 break;
             default:
@@ -72,6 +72,12 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     @Override
     public void onRefresh() {
         new ReloadExtractionsTask().execute();
+    }
+
+    private void openExtraction(String name) {
+        Intent intent = new Intent(this, ExtractionEditorActivity.class);
+        intent.putExtra(ExtractionEditorActivity.EXTRA_EXTRACTION_NAME, name);
+        startActivity(intent);
     }
 
     private class ReloadExtractionsTask extends AsyncTask<Void, Void, List<Extraction>> {
@@ -100,6 +106,13 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
             mRecyclerAdapter.reloadExtractions(extractions);
             if (mSwipeRefreshLayout.isRefreshing())
                 mSwipeRefreshLayout.setRefreshing(false);
+        }
+    }
+
+    private class OnExtractionClickListener implements RecentlyExtractedRecyclerAdapter.OnItemClickListener {
+        @Override
+        public void onItemClick(View item, Extraction extraction) {
+            openExtraction(extraction.getName());
         }
     }
 }

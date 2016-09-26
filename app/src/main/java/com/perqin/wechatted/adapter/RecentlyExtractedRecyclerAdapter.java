@@ -19,6 +19,8 @@ public class RecentlyExtractedRecyclerAdapter extends RecyclerView.Adapter<Recen
 
     private ArrayList<Extraction> mDataSet = new ArrayList<>();
 
+    private OnItemClickListener mListener;
+
     @Override
     public int getItemViewType(int position) {
         return position == 0 ? TYPE_HEADER : TYPE_ITEM;
@@ -44,7 +46,13 @@ public class RecentlyExtractedRecyclerAdapter extends RecyclerView.Adapter<Recen
             case TYPE_HEADER:
                 break;
             case TYPE_ITEM:
-                ItemViewHolder vh = (ItemViewHolder) holder;
+                final ItemViewHolder vh = (ItemViewHolder) holder;
+                vh.itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (mListener != null) mListener.onItemClick(v, mDataSet.get(vh.getAdapterPosition()));
+                    }
+                });
                 vh.nameText.setText(mDataSet.get(position - 1).getName());
                 vh.timeText.setText(mDataSet.get(position - 1).getTime());
                 break;
@@ -56,6 +64,10 @@ public class RecentlyExtractedRecyclerAdapter extends RecyclerView.Adapter<Recen
     @Override
     public int getItemCount() {
         return 1 + mDataSet.size();
+    }
+
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        mListener = listener;
     }
 
     public void reloadExtractions(List<Extraction> extractions) {
@@ -70,13 +82,13 @@ public class RecentlyExtractedRecyclerAdapter extends RecyclerView.Adapter<Recen
         }
     }
 
-    public static class HeaderViewHolder extends ViewHolder {
+    private static class HeaderViewHolder extends ViewHolder {
         public HeaderViewHolder(View itemView) {
             super(itemView);
         }
     }
 
-    public static class ItemViewHolder extends ViewHolder {
+    private static class ItemViewHolder extends ViewHolder {
         public TextView nameText;
         public TextView timeText;
 
@@ -86,5 +98,9 @@ public class RecentlyExtractedRecyclerAdapter extends RecyclerView.Adapter<Recen
             nameText = (TextView) itemView.findViewById(R.id.name_text);
             timeText = (TextView) itemView.findViewById(R.id.time_text);
         }
+    }
+
+    public interface OnItemClickListener {
+        void onItemClick(View item, Extraction extraction);
     }
 }

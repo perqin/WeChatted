@@ -150,7 +150,7 @@ public class ExtractConversationsFragment extends Fragment {
                 return false;
             }
             // Set password
-            mEnMicroMsgHelper.setPassword(new MD5(mImei + mUin).getMD5edString().substring(0, 7));
+//            mEnMicroMsgHelper.setPassword(new MD5(mImei + mUin).getMD5edString().substring(0, 7));
             // TO//DO: Read db
             // Read recent conversations
             conversations = mEnMicroMsgHelper.getRecentConversations();
