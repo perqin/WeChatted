@@ -1,13 +1,19 @@
 package com.perqin.wechatted.activity;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputEditText;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -35,6 +41,7 @@ public class ExtractActivity extends AppCompatActivity implements View.OnClickLi
     public static final int RESULT_DONE = 0;
     public static final int RESULT_OPEN = 1;
     public static final String EXTRA_EXTRACTION_NAME = "EXTRA_EXTRACTION_NAME";
+    private static final int PERMISSIONS_REQUEST_FOR_EXTRACTION = 0;
 
     private TextInputEditText mExtractionNameEdit;
     private Button mStartButton;
@@ -90,6 +97,22 @@ public class ExtractActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSIONS_REQUEST_FOR_EXTRACTION:
+                if (grantResults.length == 2 && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+                    mTask = new ExtractionTask();
+                    mTask.execute(mExtractionNameEdit.getText().toString());
+                } else {
+                    Toast.makeText(this, getString(R.string.request_permissions_not_granted), Toast.LENGTH_SHORT).show();
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.start_button:
@@ -114,16 +137,14 @@ public class ExtractActivity extends AppCompatActivity implements View.OnClickLi
         mStartButton.setEnabled(false);
         mProgressBar.setVisibility(View.VISIBLE);
         mStatusText.setVisibility(View.VISIBLE);
-        mTask = new ExtractionTask();
-        mTask.execute(mExtractionNameEdit.getText().toString());
+        runExtractionTask();
     }
 
     private void retryExtraction() {
         mProgressBar.setVisibility(View.VISIBLE);
         mStatusText.setVisibility(View.VISIBLE);
         mRetryButton.setVisibility(View.GONE);
-        mTask = new ExtractionTask();
-        mTask.execute(mExtractionNameEdit.getText().toString());
+        runExtractionTask();
     }
 
     private void doneExtraction() {
@@ -136,6 +157,34 @@ public class ExtractActivity extends AppCompatActivity implements View.OnClickLi
         data.putExtra(EXTRA_EXTRACTION_NAME, mExtractionNameEdit.getText().toString());
         setResult(RESULT_OPEN, data);
         finish();
+    }
+
+    private void runExtractionTask() {
+        // Runtime permissions request
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED
+                || ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_PHONE_STATE)
+                    || ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                // Show an explanation to the user asynchronously
+                new AlertDialog.Builder(this)
+                        .setTitle(R.string.request_permissions)
+                        .setMessage(R.string.request_extraction_permissions_explanation)
+                        .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                ActivityCompat.requestPermissions(ExtractActivity.this, new String[]{ Manifest.permission.READ_PHONE_STATE, Manifest.permission.WRITE_EXTERNAL_STORAGE }, PERMISSIONS_REQUEST_FOR_EXTRACTION);
+                            }
+                        })
+                        .show();
+            } else {
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.READ_PHONE_STATE, Manifest.permission.WRITE_EXTERNAL_STORAGE }, PERMISSIONS_REQUEST_FOR_EXTRACTION);
+            }
+        } else {
+            mTask = new ExtractionTask();
+            mTask.execute(mExtractionNameEdit.getText().toString());
+        }
     }
 
     private class ExtractionTask extends AsyncTask<String, String, Boolean> {

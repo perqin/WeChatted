@@ -33,6 +33,9 @@
     <string name="extraction_name_format">History%1$s</string>
     <string name="open">Open</string>
     <string name="unable_to_open_file_does_not_exist">Unable to open %1$s: file does not exist</string>
+    <string name="request_permissions_not_granted">Request permissions not granted</string>
+    <string name="request_permissions">Request permissions</string>
+    <string name="request_extraction_permissions_explanation">The app need READ_PHONE_STATE to get IMEI code for your device, and WRITE_EXTERNAL_STORAGE to save extracted history files to your device.</string>
 
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
