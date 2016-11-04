@@ -269,6 +269,7 @@ public class ExtractActivity extends AppCompatActivity implements View.OnClickLi
             // Save to no-password db
             String password = new MD5(imei + uin).getMD5edString().substring(0, 7);
             EnMicroMsgHelper.createDecryptedDatabase(tempEnMicroMsgDbFile, new File(extractionDir, "EnMicroMsg.db"), password);
+            // TODO: Copy other resources files (images, etc.)
             // Delete temp db
             boolean deleted = tempEnMicroMsgDbFile.delete();
             if (!deleted) Log.i("FILE", "Temp db files not deleted");

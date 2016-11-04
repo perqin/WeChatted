@@ -110,6 +110,14 @@ public class EnMicroMsgHelper extends SQLiteOpenHelper {
     // Get list for conversation list adapter
     public ArrayList<Conversation> getAdapterConversations() {
         ArrayList<Conversation> conversations = new ArrayList<>();
+        SQLiteDatabase database = getReadableDatabase("");
+        Cursor cursor = database.rawQuery("SELECT * FROM rconversation", new String[] {});
+        if (cursor.moveToFirst()) {
+            while (!cursor.isAfterLast()) {
+                conversations.add(Conversation.fromCursor(cursor));
+                cursor.moveToNext();
+            }
+        }
         return conversations;
     }
 
